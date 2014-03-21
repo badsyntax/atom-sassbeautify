@@ -1,0 +1,21 @@
+{
+  "name": "sass-beautify",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Beautify your Sass files",
+  "activationEvents": [
+    "sassbeautify"
+  ],
+  "repository": "https://github.com/badsyntax/atom-sassbeautify",
+  "license": "MIT",
+  "author": {
+    "name": "Richard Willis",
+    "email": "willis.rh@gmail.com",
+    "url": "http://badsyntax.co"
+  },
+  "engines": {
+    "atom": ">0.50.0"
+  },
+  "dependencies": {
+  }
+}
