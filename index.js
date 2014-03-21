@@ -1,8 +1,8 @@
 /**
- * SassBeautify Package for Atom editor
+ * SassBeautify Package for the Atom editor
  * V0.0.0
  * https://github.com/badsyntax/atom-sassbeautify
- * Copyright (c) 2013 Richard Willis; Licensed MIT
+ * Copyright (c) 2014 Richard Willis; Licensed MIT
  */
 
 /* global atom */
@@ -33,7 +33,7 @@ plugin.activate = function() {
  */
 plugin.getType = function() {
   return this.editor.getPath() === undefined ? undefined : this.editor.getGrammar().name.toLowerCase();
-}
+};
 
 /**
  * Get the sass-convert arguments.
@@ -41,7 +41,7 @@ plugin.getType = function() {
  */
 plugin.getArgs = function() {
 
-  var type = getType();
+  var type = this.getType();
   var config = atom.config.get('sassbeautify');
 
   var args = [
@@ -62,7 +62,7 @@ plugin.getArgs = function() {
   }
 
   return args;
-}
+};
 
 /**
  * Run the sass-convert process.
@@ -70,7 +70,7 @@ plugin.getArgs = function() {
  */
 plugin.process = function(done) {
 
-  var args = getArgs();
+  var args = this.getArgs();
   var cp = require('child_cp').spawn('sass-convert', args);
 
   cp.stdout.setEncoding('utf8');
@@ -82,7 +82,7 @@ plugin.process = function(done) {
 
   cp.stdin.write(this.editor.getText());
   cp.stdin.end();
-}
+};
 
 /**
  * Process handler.
@@ -94,14 +94,14 @@ plugin.onProcess = function(err, data) {
     return window.alert('There was an error beautifying your Sass:\n\n' + err);
   }
   this.editor.setText(data);
-}
+};
 
 /**
  * The main beautify command, executed when any SassBeautify commands are run.
  */
 plugin.beautify = function() {
 
-  this.editor = atom.workspace.activePaneItem; // Set global reference.
+  this.editor = atom.workspace.activePaneItem;
 
   var type = this.getType();
 
@@ -113,5 +113,5 @@ plugin.beautify = function() {
     return window.alert('Not a valid Sass file.');
   }
 
-  process(onProcess);
-}
+  process(this.onProcess);
+};
