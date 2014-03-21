@@ -5,15 +5,39 @@
  * Copyright (c) 2013 Richard Willis; Licensed MIT
  */
 
-var package = module.exports;
+/* global atom */
 
+'use strict';
+
+var plugin = module.exports;
+
+/**
+ * Default package options.
+ * @type {Object}
+ */
+plugin.configDefaults = {
+  indent: 4,
+  dasherize: false,
+  old: false
+};
+
+/**
+ * Get the saved file type from the editor.
+ * @param  {atom.workspace.activePaneItem} editor The active editor.
+ * @return {undefined|string} The file type.
+ */
 function getType(file) {
   return file.getPath() === undefined ? undefined : file.getGrammar().name.toLowerCase();
 }
 
-function getArgs(file) {
+/**
+ * Get the sass-convert arguments.
+ * @param  {atom.workspace.activePaneItem} editor The active editor.
+ * @return {array} The arguments array.
+ */
+function getArgs(editor) {
 
-  var type = getType(file);
+  var type = getType(editor);
   var config = atom.config.get('sassbeautify');
 
   var args = [
@@ -36,28 +60,37 @@ function getArgs(file) {
   return args;
 }
 
-function process(file) {
+/**
+ * Run the sass-convert process.
+ * @param  {atom.workspace.activePaneItem} editor The active editor.
+ * @param  {Function} done Callback function.
+ */
+function process(editor, done) {
 
-  var process = require('child_process').spawn('sass-convert', getArgs(file));
+  var args = getArgs(editor);
+  var cp = require('child_cp').spawn('sass-convert', args);
 
-  process.stdout.setEncoding('utf8');
-  process.stderr.setEncoding('utf8');
-  process.stdin.setEncoding('utf8');
+  cp.stdout.setEncoding('utf8');
+  cp.stderr.setEncoding('utf8');
+  cp.stdin.setEncoding('utf8');
 
-  process.stdout.on('data', file.setText.bind(file));
+  cp.stdout.on('data', done);
 
-  process.stderr.on('data', function (data) {
+  cp.stderr.on('data', function (data) {
     window.alert('There was an error beautifying your Sass:\n\n' + data);
   });
 
-  process.stdin.write(file.getText());
-  process.stdin.end();
+  cp.stdin.write(editor.getText());
+  cp.stdin.end();
 }
 
+/**
+ * The main beautify command, executed when any SassBeautify commands are run.
+ */
 function beautify() {
 
-  var file = atom.workspace.activePaneItem;
-  var type = getType(file);
+  var editor = atom.workspace.activePaneItem;
+  var type = getType(editor);
 
   if (type === undefined) {
     return window.alert('Please save this file before trying to beautify.');
@@ -67,15 +100,9 @@ function beautify() {
     return window.alert('Not a valid Sass file.');
   }
 
-  process(file);
+  process(editor, editor.setText.bind(editor));
 }
 
-package.configDefaults = {
-	indent: 4,
-	dasherize: false,
-	old: false
-};
-
-package.activate = function() {
+plugin.activate = function() {
   atom.workspaceView.command('SassBeautify', beautify);
 };
