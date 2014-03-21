@@ -10,6 +10,7 @@
 'use strict';
 
 var plugin = module.exports;
+var editor;
 
 /**
  * Default package options.
@@ -32,10 +33,9 @@ function getType(file) {
 
 /**
  * Get the sass-convert arguments.
- * @param  {atom.workspace.activePaneItem} editor The active editor.
  * @return {array} The arguments array.
  */
-function getArgs(editor) {
+function getArgs() {
 
   var type = getType(editor);
   var config = atom.config.get('sassbeautify');
@@ -62,10 +62,9 @@ function getArgs(editor) {
 
 /**
  * Run the sass-convert process.
- * @param  {atom.workspace.activePaneItem} editor The active editor.
  * @param  {Function} done Callback function.
  */
-function process(editor, done) {
+function process(done) {
 
   var args = getArgs(editor);
   var cp = require('child_cp').spawn('sass-convert', args);
@@ -74,14 +73,21 @@ function process(editor, done) {
   cp.stderr.setEncoding('utf8');
   cp.stdin.setEncoding('utf8');
 
-  cp.stdout.on('data', done);
-
-  cp.stderr.on('data', function (data) {
-    window.alert('There was an error beautifying your Sass:\n\n' + data);
-  });
+  cp.stdout.on('data', done.bind(null, null));
+  cp.stderr.on('data', done);
 
   cp.stdin.write(editor.getText());
   cp.stdin.end();
+}
+
+/**
+ * Process handler.
+ * @param  {null|string} err The error string.
+ * @param  {null|string} data The process output.
+ */
+function onProcess(err, data) {
+  if (err) return window.alert('There was an error beautifying your Sass:\n\n' + err);
+  editor.setText(data);
 }
 
 /**
@@ -89,7 +95,8 @@ function process(editor, done) {
  */
 function beautify() {
 
-  var editor = atom.workspace.activePaneItem;
+  editor = atom.workspace.activePaneItem; // Set global reference.
+
   var type = getType(editor);
 
   if (type === undefined) {
@@ -100,9 +107,12 @@ function beautify() {
     return window.alert('Not a valid Sass file.');
   }
 
-  process(editor, editor.setText.bind(editor));
+  process(editor, onProcess);
 }
 
+/**
+ * Package activate init, set the commands.
+ */
 plugin.activate = function() {
   atom.workspaceView.command('SassBeautify', beautify);
 };
