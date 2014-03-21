@@ -24,11 +24,10 @@ plugin.configDefaults = {
 
 /**
  * Get the saved file type from the editor.
- * @param  {atom.workspace.activePaneItem} editor The active editor.
  * @return {undefined|string} The file type.
  */
-function getType(file) {
-  return file.getPath() === undefined ? undefined : file.getGrammar().name.toLowerCase();
+function getType() {
+  return editor.getPath() === undefined ? undefined : editor.getGrammar().name.toLowerCase();
 }
 
 /**
@@ -86,7 +85,9 @@ function process(done) {
  * @param  {null|string} data The process output.
  */
 function onProcess(err, data) {
-  if (err) return window.alert('There was an error beautifying your Sass:\n\n' + err);
+  if (err) {
+    return window.alert('There was an error beautifying your Sass:\n\n' + err);
+  }
   editor.setText(data);
 }
 
