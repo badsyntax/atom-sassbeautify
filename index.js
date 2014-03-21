@@ -6,11 +6,9 @@
  */
 
 /* global atom */
-
 'use strict';
 
 var plugin = module.exports;
-var editor;
 
 /**
  * Default package options.
@@ -23,20 +21,27 @@ plugin.configDefaults = {
 };
 
 /**
+ * Package activate init, set the commands.
+ */
+plugin.activate = function() {
+  atom.workspaceView.command('SassBeautify', this.beautify.bind(this));
+};
+
+/**
  * Get the saved file type from the editor.
  * @return {undefined|string} The file type.
  */
-function getType() {
-  return editor.getPath() === undefined ? undefined : editor.getGrammar().name.toLowerCase();
+plugin.getType = function() {
+  return this.editor.getPath() === undefined ? undefined : this.editor.getGrammar().name.toLowerCase();
 }
 
 /**
  * Get the sass-convert arguments.
  * @return {array} The arguments array.
  */
-function getArgs() {
+plugin.getArgs = function() {
 
-  var type = getType(editor);
+  var type = getType();
   var config = atom.config.get('sassbeautify');
 
   var args = [
@@ -63,9 +68,9 @@ function getArgs() {
  * Run the sass-convert process.
  * @param  {Function} done Callback function.
  */
-function process(done) {
+plugin.process = function(done) {
 
-  var args = getArgs(editor);
+  var args = getArgs();
   var cp = require('child_cp').spawn('sass-convert', args);
 
   cp.stdout.setEncoding('utf8');
@@ -75,7 +80,7 @@ function process(done) {
   cp.stdout.on('data', done.bind(null, null));
   cp.stderr.on('data', done);
 
-  cp.stdin.write(editor.getText());
+  cp.stdin.write(this.editor.getText());
   cp.stdin.end();
 }
 
@@ -84,21 +89,21 @@ function process(done) {
  * @param  {null|string} err The error string.
  * @param  {null|string} data The process output.
  */
-function onProcess(err, data) {
+plugin.onProcess = function(err, data) {
   if (err) {
     return window.alert('There was an error beautifying your Sass:\n\n' + err);
   }
-  editor.setText(data);
+  this.editor.setText(data);
 }
 
 /**
  * The main beautify command, executed when any SassBeautify commands are run.
  */
-function beautify() {
+plugin.beautify = function() {
 
-  editor = atom.workspace.activePaneItem; // Set global reference.
+  this.editor = atom.workspace.activePaneItem; // Set global reference.
 
-  var type = getType(editor);
+  var type = this.getType();
 
   if (type === undefined) {
     return window.alert('Please save this file before trying to beautify.');
@@ -108,12 +113,5 @@ function beautify() {
     return window.alert('Not a valid Sass file.');
   }
 
-  process(editor, onProcess);
+  process(onProcess);
 }
-
-/**
- * Package activate init, set the commands.
- */
-plugin.activate = function() {
-  atom.workspaceView.command('SassBeautify', beautify);
-};
