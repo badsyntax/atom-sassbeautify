@@ -1,5 +1,9 @@
 # sassbeautify package
 
-Beautify your Sass files
+An Atom package that beautifies your Sass files!
 
-This package is currently under development, I don't suggest using it just yet!
+This package is currently under development, and has only been tested on OSX.
+
+You will need to install Sass.
+
+Please create an issue if it does not work for you.
