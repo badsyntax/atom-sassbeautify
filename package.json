@@ -4,7 +4,7 @@
   "private": true,
   "description": "Beautify your Sass files",
   "activationEvents": [
-    "sassbeautify"
+    "SassBeautify"
   ],
   "repository": "https://github.com/badsyntax/atom-sassbeautify",
   "license": "MIT",
