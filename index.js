@@ -17,7 +17,8 @@ var plugin = module.exports;
 plugin.configDefaults = {
   indent: 4,
   dasherize: false,
-  old: false
+  old: false,
+  path: ''
 };
 
 /**
@@ -41,23 +42,20 @@ plugin.getType = function() {
  */
 plugin.getArgs = function() {
 
-  var type = this.getType();
-  var config = atom.config.get('sassbeautify');
-
   var args = [
     '--unix-newlines',
     '--stdin',
   ];
 
-  args.push('--indent', config.indent);
-  args.push('--from', type);
-  args.push('--to', type);
+  args.push('--indent', this.config.indent);
+  args.push('--from', this.type);
+  args.push('--to', this.type);
 
-  if (config.dasherize) {
+  if (this.config.dasherize) {
     args.push('--dasherize');
   }
 
-  if (config.old && type === 'sass') {
+  if (this.config.old && this.type === 'sass') {
     args.push('--old');
   }
 
@@ -71,7 +69,16 @@ plugin.getArgs = function() {
 plugin.process = function(done) {
 
   var args = this.getArgs();
-  var cp = require('child_process').spawn('sass-convert', args);
+  var opts = {};
+  var out;
+
+  // Add custom PATH.
+  if (this.config.path) {
+    opts.env = process.env;
+    opts.env.PATH = this.config.path;
+  }
+
+  var cp = require('child_process').spawn('sass-convert', args, opts);
 
   cp.stdout.setEncoding('utf8');
   cp.stderr.setEncoding('utf8');
@@ -90,11 +97,11 @@ plugin.process = function(done) {
  * @param  {null|string} data The process output.
  */
 plugin.onProcess = function(err, data) {
+  this.status('');
   if (err) {
     return window.alert('There was an error beautifying your Sass:\n\n' + err);
   }
   this.editor.setText(data);
-  this.status('');
 };
 
 /**
@@ -115,14 +122,14 @@ plugin.status = function(text) {
 plugin.beautify = function() {
 
   this.editor = atom.workspace.getActiveEditor();
+  this.config = atom.config.get('sassbeautify');
+  this.type = this.getType();
 
-  var type = this.getType();
-
-  if (type === undefined) {
+  if (this.type === undefined) {
     return window.alert('Please save this file before trying to beautify.');
   }
 
-  if (['scss','sass'].indexOf(type) === -1) {
+  if (['scss','sass'].indexOf(this.type) === -1) {
     return window.alert('Not a valid Sass file.');
   }
 
