@@ -71,7 +71,7 @@ plugin.getArgs = function() {
 plugin.process = function(done) {
 
   var args = this.getArgs();
-  var cp = require('child_cp').spawn('sass-convert', args);
+  var cp = require('child_process').spawn('sass-convert', args);
 
   cp.stdout.setEncoding('utf8');
   cp.stderr.setEncoding('utf8');
@@ -94,6 +94,19 @@ plugin.onProcess = function(err, data) {
     return window.alert('There was an error beautifying your Sass:\n\n' + err);
   }
   this.editor.setText(data);
+  this.status('');
+};
+
+/**
+ * Status text helper.
+ * @param {string} text The text to display in the status bar.
+ */
+plugin.status = function(text) {
+  if (!this.statusElement) {
+    this.statusElement = window.document.createElement('span');
+    atom.workspaceView.statusBar.appendLeft(this.statusElement);
+  }
+  this.statusElement.innerText = text;
 };
 
 /**
@@ -101,7 +114,7 @@ plugin.onProcess = function(err, data) {
  */
 plugin.beautify = function() {
 
-  this.editor = atom.workspace.activePaneItem;
+  this.editor = atom.workspace.getActiveEditor();
 
   var type = this.getType();
 
@@ -113,5 +126,6 @@ plugin.beautify = function() {
     return window.alert('Not a valid Sass file.');
   }
 
-  process(this.onProcess);
+  this.status('Beautifying, please wait...');
+  this.process(this.onProcess.bind(this));
 };
