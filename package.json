@@ -1,5 +1,5 @@
 {
-  "name": "atom-sassbeautify",
+  "name": "sassbeautify",
   "version": "0.0.0",
   "private": true,
   "description": "Beautify your Sass files",
