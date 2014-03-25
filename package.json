@@ -2,10 +2,8 @@
   "name": "sassbeautify",
   "version": "0.1.0",
   "private": true,
-  "description": "Beautify your Sass files",
-  "activationEvents": [
-    "SassBeautify"
-  ],
+  "main": "./lib/sassbeautify",
+  "description": "Beautify your Sass files",  
   "repository": "https://github.com/badsyntax/atom-sassbeautify",
   "license": "MIT",
   "author": {
@@ -16,5 +14,6 @@
   "engines": {
     "atom": ">0.50.0"
   },
-  "dependencies": {}
+  "dependencies": {
+  }
 }
